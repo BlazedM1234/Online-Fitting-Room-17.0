@@ -28,19 +28,23 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Reduced ambient light intensity to 0.1
+        // Enable gamma correction for proper lighting and color display
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.gammaFactor = 2.2;
+
+        // Dimmed lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Reduced ambient light intensity
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Reduced directional light intensity to 0.5
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7); // Reduced directional light intensity
         directionalLight.position.set(1, 2, 2).normalize();
         scene.add(directionalLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 0.3); // Reduced point light intensity to 0.3
+        const pointLight = new THREE.PointLight(0xffffff, 0.2); // Reduced point light intensity
         pointLight.position.set(5, 5, 5);
         scene.add(pointLight);
 
-        const spotLight = new THREE.SpotLight(0xffffff, 0.2); // Reduced spotlight intensity to 0.2
+        const spotLight = new THREE.SpotLight(0xffffff, 0.5); // Reduced spotlight intensity
         spotLight.position.set(-5, 5, 5);
         spotLight.castShadow = true;
         scene.add(spotLight);
@@ -94,7 +98,7 @@
             if (model) {
                 model.traverse(function(child) {
                     if (child.isMesh && child.material) {
-                        child.material.color.set(color);  // Update color on all meshes
+                        child.material.color.set(color);
                     }
                 });
             }
