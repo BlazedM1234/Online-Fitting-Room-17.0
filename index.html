@@ -26,14 +26,26 @@
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.outputEncoding = THREE.sRGBEncoding;  // Gamma correction
+        renderer.gammaFactor = 2.2;
         document.body.appendChild(renderer.domElement);
 
-        // Add lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        // Enhanced Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Increase ambient light
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(1, 1, 1).normalize();
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Increase directional light
+        directionalLight.position.set(1, 2, 2).normalize();
         scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100); 
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        const spotLight = new THREE.SpotLight(0xffffff, 1.5); // Stronger spotlight
+        spotLight.position.set(-5, 5, 5);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
 
         // Load GLB model from the specified URL
         const loader = new THREE.GLTFLoader();
@@ -41,57 +53,60 @@
 
         loader.load('https://raw.githubusercontent.com/BlazedM1234/Online-Fitting-Room-17.0/main/women%20model%205.glb', function(gltf) {
             model = gltf.scene;
+            model.traverse(function(child) {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: child.material.color,
+                        roughness: 0.5,
+                        metalness: 0.1
+                    });
+                }
+            });
             scene.add(model);
             camera.position.z = 5;
-            console.log('Model loaded successfully');
 
-            animate();  // Start the animation loop after the model is loaded
+            animate();  // Start animation loop
         }, undefined, function(error) {
             console.error('An error occurred while loading the model:', error);
         });
 
-        // Add OrbitControls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.25;
 
-        // Input listeners for height
+        // Input listeners
         document.getElementById('height').addEventListener('input', function() {
-            const height = parseFloat(this.value) / 100 || 1;  // Convert cm to meters
+            const height = parseFloat(this.value) / 100 || 1;
             if (model) {
-                model.scale.set(model.scale.x, height, model.scale.z);  // Scale height (Y-axis)
+                model.scale.set(model.scale.x, height, model.scale.z);
             }
         });
 
-        // Input listeners for width
         document.getElementById('width').addEventListener('input', function() {
-            const width = parseFloat(this.value) / 100 || 1;  // Convert cm to meters
+            const width = parseFloat(this.value) / 100 || 1;
             if (model) {
-                model.scale.set(width, model.scale.y, model.scale.z);  // Scale width (X-axis)
+                model.scale.set(width, model.scale.y, model.scale.z);
             }
         });
 
-        // Input listeners for length (Z-axis)
         document.getElementById('length').addEventListener('input', function() {
-            const length = parseFloat(this.value) / 100 || 1;  // Convert cm to meters
+            const length = parseFloat(this.value) / 100 || 1;
             if (model) {
-                model.scale.set(model.scale.x, model.scale.y, length);  // Scale length (Z-axis)
+                model.scale.set(model.scale.x, model.scale.y, length);
             }
         });
 
-        // Input listeners for skin color
         document.getElementById('skinColor').addEventListener('input', function() {
             const color = this.value;
             if (model) {
                 model.traverse(function(child) {
                     if (child.isMesh && child.material) {
-                        child.material.color.set(color);  // Update color on all meshes
+                        child.material.color.set(color);
                     }
                 });
             }
         });
 
-        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
