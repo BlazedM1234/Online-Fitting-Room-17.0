@@ -26,23 +26,21 @@
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.outputEncoding = THREE.sRGBEncoding;  // Gamma correction
-        renderer.gammaFactor = 2.2;
         document.body.appendChild(renderer.domElement);
 
-        // Enhanced Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Increase ambient light
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.1); // Reduced ambient light intensity to 0.1
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Increase directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Reduced directional light intensity to 0.5
         directionalLight.position.set(1, 2, 2).normalize();
         scene.add(directionalLight);
 
-        const pointLight = new THREE.PointLight(0xffffff, 1, 100); 
+        const pointLight = new THREE.PointLight(0xffffff, 0.3); // Reduced point light intensity to 0.3
         pointLight.position.set(5, 5, 5);
         scene.add(pointLight);
 
-        const spotLight = new THREE.SpotLight(0xffffff, 1.5); // Stronger spotlight
+        const spotLight = new THREE.SpotLight(0xffffff, 0.2); // Reduced spotlight intensity to 0.2
         spotLight.position.set(-5, 5, 5);
         spotLight.castShadow = true;
         scene.add(spotLight);
@@ -53,28 +51,20 @@
 
         loader.load('https://raw.githubusercontent.com/BlazedM1234/Online-Fitting-Room-17.0/main/women%20model%208.glb', function(gltf) {
             model = gltf.scene;
-            model.traverse(function(child) {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: child.material.color,
-                        roughness: 0.5,
-                        metalness: 0.1
-                    });
-                }
-            });
             scene.add(model);
             camera.position.z = 5;
 
-            animate();  // Start animation loop
+            animate();  // Start the animation loop after the model is loaded
         }, undefined, function(error) {
             console.error('An error occurred while loading the model:', error);
         });
 
+        // Add OrbitControls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.25;
 
-        // Input listeners
+        // Input listeners for height
         document.getElementById('height').addEventListener('input', function() {
             const height = parseFloat(this.value) / 100 || 1;
             if (model) {
@@ -82,6 +72,7 @@
             }
         });
 
+        // Input listeners for width
         document.getElementById('width').addEventListener('input', function() {
             const width = parseFloat(this.value) / 100 || 1;
             if (model) {
@@ -89,6 +80,7 @@
             }
         });
 
+        // Input listeners for length (Z-axis)
         document.getElementById('length').addEventListener('input', function() {
             const length = parseFloat(this.value) / 100 || 1;
             if (model) {
@@ -96,17 +88,19 @@
             }
         });
 
+        // Input listeners for skin color
         document.getElementById('skinColor').addEventListener('input', function() {
             const color = this.value;
             if (model) {
                 model.traverse(function(child) {
                     if (child.isMesh && child.material) {
-                        child.material.color.set(color);
+                        child.material.color.set(color);  // Update color on all meshes
                     }
                 });
             }
         });
 
+        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
