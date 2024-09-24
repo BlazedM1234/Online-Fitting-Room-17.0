@@ -113,3 +113,121 @@
     </script>
 </body>
 </html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Clothing Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; overflow: hidden; }
+        .controls { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.8); padding: 10px; border-radius: 5px; }
+        canvas { display: block; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <h2>Upload Shirt Design</h2>
+        <label>Shirt Front Image: <input type="file" id="shirtFrontImage" accept="image/*" required></label><br>
+        <label>Shirt Back Image: <input type="file" id="shirtBackImage" accept="image/*" required></label><br>
+        <label>Shirt Color: <input type="color" id="shirtColor" value="#ffffff"></label><br>
+        <label>Shirt Width (cm): <input type="number" id="shirtWidth" value="50" min="10" max="200"></label><br>
+        <label>Shirt Length (cm): <input type="number" id="shirtLength" value="60" min="10" max="200"></label><br>
+        <label>Shirt Height (cm): <input type="number" id="shirtHeight" value="80" min="10" max="200"></label><br>
+        <button id="addShirt">Add Shirt</button>
+
+        <h2>Upload Pants Design</h2>
+        <label>Pants Front Image: <input type="file" id="pantsFrontImage" accept="image/*" required></label><br>
+        <label>Pants Back Image: <input type="file" id="pantsBackImage" accept="image/*" required></label><br>
+        <label>Pants Color: <input type="color" id="pantsColor" value="#ffffff"></label><br>
+        <label>Pants Width (cm): <input type="number" id="pantsWidth" value="50" min="10" max="200"></label><br>
+        <label>Pants Length (cm): <input type="number" id="pantsLength" value="80" min="10" max="200"></label><br>
+        <label>Pants Height (cm): <input type="number" id="pantsHeight" value="80" min="10" max="200"></label><br>
+        <button id="addPants">Add Pants</button>
+    </div>
+
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight);
+
+        let model;
+        const loader = new THREE.GLTFLoader();
+
+        // Load the initial human model
+        loader.load('https://raw.githubusercontent.com/BlazedM1234/Online-Fitting-Room-14.0/main/men%20model%205%20blend%20copy.glb', function(gltf) {
+            model = gltf.scene;
+            scene.add(model);
+            camera.position.z = 5;
+        }, undefined, function(error) {
+            console.error('An error occurred while loading the model:', error);
+        });
+
+        // Function to create clothing and apply to model
+        function createClothing(frontImageFile, backImageFile, color, width, length, height, positionY) {
+            const frontTexture = new THREE.TextureLoader().load(URL.createObjectURL(frontImageFile));
+
+            // Create clothing geometry
+            const clothingGeometry = new THREE.BoxGeometry(width / 100, height / 100, length / 100);
+            const clothingMaterial = new THREE.MeshStandardMaterial({ map: frontTexture, color: color });
+            const clothingMesh = new THREE.Mesh(clothingGeometry, clothingMaterial);
+
+            // Position the clothing on the model
+            clothingMesh.position.y = positionY;  // Adjust height as needed
+            clothingMesh.position.z = 0.1; // Move it in front of the model
+            scene.add(clothingMesh);
+
+            return clothingMesh;
+        }
+
+        // Add shirt
+        document.getElementById('addShirt').addEventListener('click', function() {
+            const shirtFrontImage = document.getElementById('shirtFrontImage').files[0];
+            const shirtBackImage = document.getElementById('shirtBackImage').files[0];
+            const shirtColor = document.getElementById('shirtColor').value;
+            const shirtWidth = parseFloat(document.getElementById('shirtWidth').value);
+            const shirtLength = parseFloat(document.getElementById('shirtLength').value);
+            const shirtHeight = parseFloat(document.getElementById('shirtHeight').value);
+
+            createClothing(shirtFrontImage, shirtBackImage, shirtColor, shirtWidth, shirtLength, shirtHeight, 1.6); // Adjust height for shirt placement
+        });
+
+        // Add pants
+        document.getElementById('addPants').addEventListener('click', function() {
+            const pantsFrontImage = document.getElementById('pantsFrontImage').files[0];
+            const pantsBackImage = document.getElementById('pantsBackImage').files[0];
+            const pantsColor = document.getElementById('pantsColor').value;
+            const pantsWidth = parseFloat(document.getElementById('pantsWidth').value);
+            const pantsLength = parseFloat(document.getElementById('pantsLength').value);
+            const pantsHeight = parseFloat(document.getElementById('pantsHeight').value);
+
+            createClothing(pantsFrontImage, pantsBackImage, pantsColor, pantsWidth, pantsLength, pantsHeight, 0.8); // Adjust height for pants placement
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
+
